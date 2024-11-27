@@ -8,12 +8,11 @@ import {conversationRoutes} from "./handler/conversation-routes";
 import {messageRoutes} from "./handler/message-routes";
 import {postRoutes} from "./handler/post-routes";
 import {userRoutes} from "./handler/user-routes";
-
-
+import 'dotenv/config';
 
 const main = async () => {
     const app = express();
-    const port = 3030;
+    const port = parseInt(process.env.PORT || '3030', 10);
 
     try {
         await AppDataSource.initialize();
