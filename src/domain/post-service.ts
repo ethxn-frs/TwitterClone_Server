@@ -24,14 +24,13 @@ export class PostService {
             post.content = request.content;
             post.deleted = false;
 
-            await queryRunner.manager.save(Post, post);
-
             if (request.parentId) {
                 const parentPost = await this.getPostById(request.parentId, queryRunner.manager);
                 parentPost.comments.push(post);
                 await queryRunner.manager.save(Post, parentPost);
             }
 
+            await queryRunner.manager.save(Post, post);
             await queryRunner.commitTransaction();
             return post;
         } catch (error: any) {
@@ -40,6 +39,12 @@ export class PostService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async getAllPosts(): Promise<Post[]> {
+        return this.db.manager.find(Post, {
+            relations: ["author", "comments", "parentPost", "userHaveLiked"],
+        });
     }
 
     async deletePost(postId: number): Promise<void> {
