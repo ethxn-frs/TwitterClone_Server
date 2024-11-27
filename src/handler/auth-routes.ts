@@ -17,7 +17,7 @@ const validateRequest = (schema: any) => (req: Request, res: Response, next: Nex
 
 export const authRoutes = (app: express.Express) => {
 
-    app.post('/login', validateRequest(loginValidation), async (req: Request, res: Response) => {
+    app.post('/login', async (req: Request, res: Response) => {
         try {
             const {user, token} = await authService.login(req.body);
             res.status(200).json({user, token});
@@ -26,7 +26,7 @@ export const authRoutes = (app: express.Express) => {
         }
     });
 
-    app.post('/change-password', authenticate, validateRequest(changePasswordValidation), async (req: Request, res: Response) => {
+    app.post('/change-password', authenticate, async (req: Request, res: Response) => {
         try {
             const result = await authService.changePassword(req.body);
             res.status(200).json(result);
@@ -35,7 +35,7 @@ export const authRoutes = (app: express.Express) => {
         }
     });
 
-    app.post('/lost-password', validateRequest(lostPasswordValidation), async (req: Request, res: Response) => {
+    app.post('/lost-password', async (req: Request, res: Response) => {
         try {
             await authService.lostPassword(req.body);
             res.status(200).json({message: "Password reset email sent"});

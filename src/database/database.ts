@@ -5,12 +5,12 @@ import {Message} from "./entities/message";
 import {Conversation} from "./entities/conversation";
 
 const config: any = {
-    type: 'pgsql',
+    type: 'postgres',
     host: 'localhost',
-    port: 8889,
-    username: 'pgsql',
-    password: 'root',
-    database: 'Twitter-Clone',
+    port: 5432,
+    username: 'ethan',
+    password: 'ethan',
+    database: 'twitter_clone_database',
     logging: true,
     synchronize: true,
     entities: [User, Post, Message, Conversation],

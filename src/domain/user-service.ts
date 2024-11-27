@@ -2,6 +2,7 @@ import {DataSource, In} from "typeorm";
 import {User} from "../database/entities/user";
 import {CreateUserRequest} from "../handler/validator/user-validator";
 import bcrypt from "bcrypt";
+import {Message} from "../database/entities/message";
 
 const SALT_ROUNDS = 10;
 
@@ -46,9 +47,31 @@ export class UserService {
     }
 
     async getUserById(userId: number): Promise<User> {
-        const user = await this.db.manager.findOne(User, {where: {id: userId}});
+        const user = await this.db.manager.findOne(User, {
+            where: {id: userId},
+            relations: ['followers', 'following', 'messages', 'posts']
+        })
         if (!user) throw new Error("User not found");
         return user;
+    }
+
+    async getAllUsers(): Promise<[user: User[], count: number]> {
+        return await this.db.manager.findAndCount(User);
+    }
+
+    async getUserFollower(userId: number): Promise<User[]> {
+        const user = await this.getUserById(userId);
+        return user.followers;
+    }
+
+    async getUserFollowing(userId: number): Promise<User[]> {
+        const user = await this.getUserById(userId);
+        return user.following;
+    }
+
+    async getUserMessages(userId: number): Promise<Message[]> {
+        const user = await this.getUserById(userId);
+        return user.messages;
     }
 
     async getUsersByIds(userIds: number[]): Promise<User[]> {
@@ -99,31 +122,23 @@ export class UserService {
         await queryRunner.startTransaction();
 
         try {
-            const follower = await queryRunner.manager.findOne(User, {
-                where: {id: followerId},
-                relations: ['following']
-            });
-            const followee = await queryRunner.manager.findOne(User, {
-                where: {id: followeeId},
-                relations: ['followers']
-            });
+            const follower = await this.getUserById(followerId);
+            const followee = await this.getUserById(followeeId);
 
             if (!follower || !followee) {
                 throw new Error("One or both users not found.");
             }
 
-            // Check if already following
-            if (follower.following.some(user => user.id === followeeId)) {
+            // Vérifie si le follower suit déjà le followee
+            if (follower.following.some((user) => user.id === followeeId)) {
                 throw new Error("User is already following this followee.");
             }
 
-            // Add the follow relationship
+            // Ajoute le followee dans le tableau des "following"
             follower.following.push(followee);
-            followee.followers.push(follower);
 
-            // Save the updated entities
+            // Sauvegarde uniquement le follower, TypeORM synchronisera l'autre côté
             await queryRunner.manager.save(User, follower);
-            await queryRunner.manager.save(User, followee);
 
             await queryRunner.commitTransaction();
         } catch (error: any) {
@@ -144,31 +159,25 @@ export class UserService {
         await queryRunner.startTransaction();
 
         try {
-            const follower = await queryRunner.manager.findOne(User, {
-                where: {id: followerId},
-                relations: ['following']
-            });
-            const followee = await queryRunner.manager.findOne(User, {
-                where: {id: followeeId},
-                relations: ['followers']
-            });
+            const follower = await this.getUserById(followerId);
+            const followee = await this.getUserById(followeeId);
 
             if (!follower || !followee) {
                 throw new Error("One or both users not found.");
             }
 
-            // Check if the user is actually following the followee
-            if (!follower.following.some(user => user.id === followeeId)) {
+            // Vérifie si le follower suit déjà le followee
+            if (!follower.following.some((user) => user.id === followeeId)) {
                 throw new Error("User is not following this followee.");
             }
 
-            // Remove the follow relationship
-            follower.following = follower.following.filter(user => user.id !== followeeId);
-            followee.followers = followee.followers.filter(user => user.id !== followerId);
+            // Retire le followee du tableau "following"
+            follower.following = follower.following.filter(
+                (user) => user.id !== followeeId
+            );
 
-            // Save the updated entities
+            // Sauvegarde uniquement le follower, TypeORM synchronisera l'autre côté
             await queryRunner.manager.save(User, follower);
-            await queryRunner.manager.save(User, followee);
 
             await queryRunner.commitTransaction();
         } catch (error: any) {

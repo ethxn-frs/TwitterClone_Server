@@ -7,7 +7,6 @@ import {
 } from "./validator/user-validator";
 import {AppDataSource} from "../database/database";
 import {UserService} from "../domain/user-service";
-import {authenticate} from "../middleware/authenticate";
 
 const userService = new UserService(AppDataSource);
 
@@ -24,8 +23,9 @@ export const userRoutes = (app: express.Express) => {
         }
     });
 
-    app.put('/follow', authenticate, async (req: Request, res: Response) => {
+    app.put('/follow', async (req: Request, res: Response) => {
         try {
+            console.log(req.body)
             const followValidation = FollowRequestValidation.validate(req.body);
 
             if (!followValidation) {
@@ -39,8 +39,7 @@ export const userRoutes = (app: express.Express) => {
         }
     });
 
-    app.put('/unfollow', authenticate, async (req: Request, res: Response) => {
-
+    app.put('/unfollow', async (req: Request, res: Response) => {
         try {
             const unfollowValidation = UnfollowRequestValidation.validate(req.body);
 
@@ -55,7 +54,7 @@ export const userRoutes = (app: express.Express) => {
         }
     })
 
-    app.post('/user/username/search', async (req: Request, res: Response) => {
+    app.post('/users/username/search', async (req: Request, res: Response) => {
 
         try {
 
@@ -71,10 +70,49 @@ export const userRoutes = (app: express.Express) => {
         }
     })
 
-    app.post('/user/:id', authenticate, async (req: Request, res: Response) => {
+    app.get('/users/:id/followers', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.getUserFollower(userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    });
+
+    app.get('/users/:id/following', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.getUserFollowing(userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    });
+
+    app.get('/users/:id/messages', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.getUserMessages(userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    });
+
+    app.get('/users/:id', async (req: Request, res: Response) => {
         try {
             const userId: number = parseInt(req.params.id, 10);
             const result = await userService.getUserById(userId);
+            res.status(201).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+    app.get('/users', async (req: Request, res: Response) => {
+        try {
+            const result = await userService.getAllUsers();
             res.status(201).json(result);
         } catch (error: any) {
             res.status(400).json({message: error.message});

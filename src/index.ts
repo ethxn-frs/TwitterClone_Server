@@ -9,6 +9,8 @@ import {messageRoutes} from "./handler/message-routes";
 import {postRoutes} from "./handler/post-routes";
 import {userRoutes} from "./handler/user-routes";
 
+
+
 const main = async () => {
     const app = express();
     const port = 3030;
@@ -16,7 +18,6 @@ const main = async () => {
     try {
         await AppDataSource.initialize();
         console.log("Well connected to database");
-
         await AppDataSource.synchronize();
         console.log("Synchronized");
     } catch (error) {

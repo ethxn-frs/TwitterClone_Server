@@ -52,4 +52,15 @@ export class MessageService {
 
         await this.db.manager.remove(message);
     }
+
+    async getMessageById(messageId: number): Promise<Message> {
+        const message = await this.db.manager.findOne(Message, {
+            where: {id: messageId},
+            relations: ["author", "conversation"]
+        });
+
+        if (!message) throw new Error("Message not found.");
+
+        return message
+    }
 }

@@ -36,7 +36,6 @@ export class ConversationService {
         return await this.db.manager.save(conversation);
     }
 
-
     async addUserToConversation(conversationId: number, userId: number): Promise<void> {
         const conversation = await this.db.manager.findOne(Conversation, {
             where: {id: conversationId},
@@ -72,7 +71,19 @@ export class ConversationService {
         return await this.db.manager
             .createQueryBuilder(Conversation, "conversation")
             .leftJoinAndSelect("conversation.users", "user")
+            .leftJoinAndSelect("conversation.messages", "message")
             .where("user.id = :userId", {userId})
             .getMany();
+    }
+
+    async getConversationById(conversationId: number): Promise<Conversation> {
+        const conversation = await this.db.manager.findOne(Conversation, {
+            where: {id: conversationId},
+            relations: ["users", "messages"]
+        })
+        if (!conversation) {
+            throw new Error("Conversation not found.");
+        }
+        return conversation;
     }
 }
