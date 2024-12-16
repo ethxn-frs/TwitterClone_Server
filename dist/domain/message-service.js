@@ -59,5 +59,16 @@ class MessageService {
             yield this.db.manager.remove(message);
         });
     }
+    getMessageById(messageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const message = yield this.db.manager.findOne(message_1.Message, {
+                where: { id: messageId },
+                relations: ["author", "conversation"]
+            });
+            if (!message)
+                throw new Error("Message not found.");
+            return message;
+        });
+    }
 }
 exports.MessageService = MessageService;

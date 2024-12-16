@@ -13,6 +13,7 @@ exports.conversationRoutes = void 0;
 const database_1 = require("../database/database");
 const conversation_service_1 = require("../domain/conversation-service");
 const authenticate_1 = require("../middleware/authenticate");
+const conversation_validator_1 = require("./validator/conversation-validator");
 const conversationService = new conversation_service_1.ConversationService(database_1.AppDataSource);
 const conversationRoutes = (app) => {
     app.post('/conversations', authenticate_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -65,6 +66,16 @@ const conversationRoutes = (app) => {
         try {
             const conversations = yield conversationService.getUserConversations(userId);
             res.status(200).json(conversations);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
+    app.get('/conversations/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const conversationIdValidate = conversation_validator_1.idConversationValidation.validate(req.params);
+            const conversation = yield conversationService.getConversationById(conversationIdValidate.value.conversationId);
+            res.status(200).json(conversation);
         }
         catch (error) {
             res.status(400).json({ message: error.message });

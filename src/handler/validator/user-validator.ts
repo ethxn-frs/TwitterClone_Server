@@ -10,12 +10,12 @@ export interface IdUserRequest {
 }
 
 export const loginValidation = Joi.object<LoginRequest>({
-    username: Joi.string().required(),
+    email: Joi.string().required(),
     password: Joi.string().required(),
 })
 
 export interface LoginRequest {
-    username: string,
+    email: string,
     password: string,
 }
 

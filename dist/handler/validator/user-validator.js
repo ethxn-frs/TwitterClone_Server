@@ -9,7 +9,7 @@ exports.idUserValidation = joi_1.default.object({
     userId: joi_1.default.number().required()
 });
 exports.loginValidation = joi_1.default.object({
-    username: joi_1.default.string().required(),
+    email: joi_1.default.string().required(),
     password: joi_1.default.string().required(),
 });
 exports.changePasswordValidation = joi_1.default.object({

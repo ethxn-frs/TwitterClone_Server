@@ -79,5 +79,17 @@ class ConversationService {
                 .getMany();
         });
     }
+    getConversationById(conversationId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const conversation = yield this.db.manager.findOne(conversation_1.Conversation, {
+                where: { id: conversationId },
+                relations: ["users", "messages"]
+            });
+            if (!conversation) {
+                throw new Error("Conversation not found.");
+            }
+            return conversation;
+        });
+    }
 }
 exports.ConversationService = ConversationService;
