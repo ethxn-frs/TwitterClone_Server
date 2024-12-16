@@ -14,6 +14,8 @@ export const userRoutes = (app: express.Express) => {
 
     app.post('/signup', async (req: Request, res: Response) => {
         try {
+            console.log(req.body)
+            
             const userRequestValidation = createUserValidation.validate(req.body);
             const newUser = await userService.signUp(userRequestValidation.value);
             const {password, ...userWithoutPassword} = newUser;

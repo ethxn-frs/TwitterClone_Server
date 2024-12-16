@@ -30,12 +30,12 @@ class PostService {
                 post.author = author;
                 post.content = request.content;
                 post.deleted = false;
-                yield queryRunner.manager.save(post_1.Post, post);
                 if (request.parentId) {
                     const parentPost = yield this.getPostById(request.parentId, queryRunner.manager);
                     parentPost.comments.push(post);
                     yield queryRunner.manager.save(post_1.Post, parentPost);
                 }
+                yield queryRunner.manager.save(post_1.Post, post);
                 yield queryRunner.commitTransaction();
                 return post;
             }
@@ -46,6 +46,13 @@ class PostService {
             finally {
                 yield queryRunner.release();
             }
+        });
+    }
+    getAllPosts() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.manager.find(post_1.Post, {
+                relations: ["author", "comments", "parentPost", "userHaveLiked"],
+            });
         });
     }
     deletePost(postId) {

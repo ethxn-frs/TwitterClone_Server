@@ -26,7 +26,7 @@ class AuthService {
     }
     login(userRequest) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield userService.getUserByUsername(userRequest.username);
+            const user = yield userService.getUserByEmail(userRequest.email);
             if (!user) {
                 throw new Error("Invalid credentials");
             }

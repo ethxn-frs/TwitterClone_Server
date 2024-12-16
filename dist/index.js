@@ -24,7 +24,7 @@ const post_routes_1 = require("./handler/post-routes");
 const user_routes_1 = require("./handler/user-routes");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const app = (0, express_1.default)();
-    const port = 3030;
+    const port = parseInt(process.env.PORT || '3030', 10);
     try {
         yield database_1.AppDataSource.initialize();
         console.log("Well connected to database");

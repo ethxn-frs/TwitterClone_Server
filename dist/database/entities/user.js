@@ -15,36 +15,6 @@ const conversation_1 = require("./conversation");
 const message_1 = require("./message");
 const post_1 = require("./post");
 let User = class User {
-    constructor(id, firstName, lastName, username, email, phoneNumber, password, birthDate, followers, following, posts, likedPosts, createdAt, updatedAt) {
-        if (id)
-            this.id = id;
-        if (firstName)
-            this.firstName = firstName;
-        if (lastName)
-            this.lastName = lastName;
-        if (username)
-            this.username = username;
-        if (email)
-            this.email = email;
-        if (phoneNumber)
-            this.phoneNumber = phoneNumber;
-        if (password)
-            this.password = password;
-        if (birthDate)
-            this.birthDate = birthDate;
-        if (followers)
-            this.followers = followers;
-        if (following)
-            this.following = following;
-        if (posts)
-            this.posts = posts;
-        if (likedPosts)
-            this.likedPosts = likedPosts;
-        if (createdAt)
-            this.createdAt = createdAt;
-        if (updatedAt)
-            this.updatedAt = updatedAt;
-    }
 };
 exports.User = User;
 __decorate([
@@ -81,7 +51,6 @@ __decorate([
 ], User.prototype, "birthDate", void 0);
 __decorate([
     (0, typeorm_1.ManyToMany)(() => User, (user) => user.following),
-    (0, typeorm_1.JoinTable)(),
     __metadata("design:type", Array)
 ], User.prototype, "followers", void 0);
 __decorate([
@@ -114,6 +83,5 @@ __decorate([
     __metadata("design:type", Object)
 ], User.prototype, "updatedAt", void 0);
 exports.User = User = __decorate([
-    (0, typeorm_1.Entity)(),
-    __metadata("design:paramtypes", [Number, String, String, String, String, String, String, Date, Array, Array, Array, Array, Date, Date])
+    (0, typeorm_1.Entity)()
 ], User);

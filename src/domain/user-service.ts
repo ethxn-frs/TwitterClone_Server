@@ -91,7 +91,7 @@ export class UserService {
 
     async getUserByUsername(username: string): Promise<User | null> {
         return await this.db.manager.findOne(User, {
-            where: {username: username},
+            where: {email: username},
         })
     }
 

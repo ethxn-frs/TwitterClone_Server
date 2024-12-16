@@ -109,7 +109,7 @@ class UserService {
     getUserByUsername(username) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.db.manager.findOne(user_1.User, {
-                where: { username: username },
+                where: { email: username },
             });
         });
     }
@@ -143,27 +143,19 @@ class UserService {
             yield queryRunner.connect();
             yield queryRunner.startTransaction();
             try {
-                const follower = yield queryRunner.manager.findOne(user_1.User, {
-                    where: { id: followerId },
-                    relations: ['following']
-                });
-                const followee = yield queryRunner.manager.findOne(user_1.User, {
-                    where: { id: followeeId },
-                    relations: ['followers']
-                });
+                const follower = yield this.getUserById(followerId);
+                const followee = yield this.getUserById(followeeId);
                 if (!follower || !followee) {
                     throw new Error("One or both users not found.");
                 }
-                // Check if already following
-                if (follower.following.some(user => user.id === followeeId)) {
+                // Vérifie si le follower suit déjà le followee
+                if (follower.following.some((user) => user.id === followeeId)) {
                     throw new Error("User is already following this followee.");
                 }
-                // Add the follow relationship
+                // Ajoute le followee dans le tableau des "following"
                 follower.following.push(followee);
-                followee.followers.push(follower);
-                // Save the updated entities
+                // Sauvegarde uniquement le follower, TypeORM synchronisera l'autre côté
                 yield queryRunner.manager.save(user_1.User, follower);
-                yield queryRunner.manager.save(user_1.User, followee);
                 yield queryRunner.commitTransaction();
             }
             catch (error) {
@@ -184,27 +176,19 @@ class UserService {
             yield queryRunner.connect();
             yield queryRunner.startTransaction();
             try {
-                const follower = yield queryRunner.manager.findOne(user_1.User, {
-                    where: { id: followerId },
-                    relations: ['following']
-                });
-                const followee = yield queryRunner.manager.findOne(user_1.User, {
-                    where: { id: followeeId },
-                    relations: ['followers']
-                });
+                const follower = yield this.getUserById(followerId);
+                const followee = yield this.getUserById(followeeId);
                 if (!follower || !followee) {
                     throw new Error("One or both users not found.");
                 }
-                // Check if the user is actually following the followee
-                if (!follower.following.some(user => user.id === followeeId)) {
+                // Vérifie si le follower suit déjà le followee
+                if (!follower.following.some((user) => user.id === followeeId)) {
                     throw new Error("User is not following this followee.");
                 }
-                // Remove the follow relationship
-                follower.following = follower.following.filter(user => user.id !== followeeId);
-                followee.followers = followee.followers.filter(user => user.id !== followerId);
-                // Save the updated entities
+                // Retire le followee du tableau "following"
+                follower.following = follower.following.filter((user) => user.id !== followeeId);
+                // Sauvegarde uniquement le follower, TypeORM synchronisera l'autre côté
                 yield queryRunner.manager.save(user_1.User, follower);
-                yield queryRunner.manager.save(user_1.User, followee);
                 yield queryRunner.commitTransaction();
             }
             catch (error) {

@@ -28,6 +28,7 @@ const userService = new user_service_1.UserService(database_1.AppDataSource);
 const userRoutes = (app) => {
     app.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
+            console.log(req.body);
             const userRequestValidation = user_validator_1.createUserValidation.validate(req.body);
             const newUser = yield userService.signUp(userRequestValidation.value);
             const { password } = newUser, userWithoutPassword = __rest(newUser, ["password"]);
@@ -39,6 +40,7 @@ const userRoutes = (app) => {
     }));
     app.put('/follow', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
+            console.log(req.body);
             const followValidation = user_validator_1.FollowRequestValidation.validate(req.body);
             if (!followValidation) {
                 return;

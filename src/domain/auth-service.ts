@@ -16,7 +16,7 @@ export class AuthService {
     }
 
     async login(userRequest: LoginRequest): Promise<{ user: User; token: string }> {
-        const user = await userService.getUserByUsername(userRequest.username);
+        const user = await userService.getUserByEmail(userRequest.email);
         if (!user) {
             throw new Error("Invalid credentials");
         }

@@ -16,7 +16,7 @@ const post_validator_1 = require("./validator/post-validator");
 const user_validator_1 = require("./validator/user-validator");
 const postService = new post_service_1.PostService(database_1.AppDataSource);
 const postRoutes = (app) => {
-    app.post('/post/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.post('/posts/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const createPostValidate = post_validator_1.createPostValidation.validate(req.body);
             if (!createPostValidate) {
@@ -29,7 +29,7 @@ const postRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.put('/post/:id/like', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.put('/posts/:id/like', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const likePostValidate = post_validator_1.likePostValidation.validate(req.params);
             if (!likePostValidate) {
@@ -46,7 +46,7 @@ const postRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.put('/post/:id/delete', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.put('/posts/:id/delete', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const deletePostValidate = post_validator_1.deletePostValidation.validate(req.params);
             if (!deletePostValidate) {
@@ -59,13 +59,22 @@ const postRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.get('/post/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.get('/posts/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const idPostValidate = post_validator_1.idPostValidation.validate(req.params);
             if (!idPostValidate) {
                 return;
             }
             const result = yield postService.getPostById(idPostValidate.value.postId);
+            res.status(201).json(result);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
+    app.get('/posts', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const result = yield postService.getAllPosts();
             res.status(201).json(result);
         }
         catch (error) {

@@ -1,0 +1,31 @@
+
+services:
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - backend-network
+    volumes:
+      - .:/app  # Monte le répertoire local pour le développement
+      - ./public/images:/app/public/images
+    environment:
+      - NODE_ENV=production
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"  # Expose le port 80 pour Nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - backend-network
+    restart: always  # Redémarre automatiquement en cas de crash
+
+networks:
+  backend-network:
+    driver: bridge
