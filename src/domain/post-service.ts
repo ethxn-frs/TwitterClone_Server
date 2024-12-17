@@ -74,10 +74,12 @@ export class PostService {
             where: {id: postId},
             relations: [
                 "comments",
-                "comments.author",
                 "author",
                 "parentPost",
-                "userHaveLiked"
+                "userHaveLiked",
+                "comments.author",
+                "comments.userHaveLiked",
+                "comments.comments"
             ],
             order: {
                 comments: {
