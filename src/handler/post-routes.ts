@@ -27,7 +27,7 @@ export const postRoutes = (app: express.Express) => {
         }
     });
 
-    app.put('/posts/:id/like', async (req: Request, res: Response) => {
+    app.put('/posts/:postId/like', async (req: Request, res: Response) => {
         try {
             const likePostValidate = likePostValidation.validate(req.params);
 
@@ -41,7 +41,21 @@ export const postRoutes = (app: express.Express) => {
                 return;
             }
 
-            const result = await postService.likePost(likePostValidate.value.postId, userIdValidate.value.userId);
+            const result = await postService.likePost(userIdValidate.value.userId, likePostValidate.value.postId);
+            res.status(201).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+    app.get('/posts/:postId/comments', async (req: Request, res: Response) => {
+        try {
+            const postIdValidate = idPostValidation.validate(req.params);
+            if (!postIdValidate) {
+                return;
+            }
+
+            const result = await postService.getComments(postIdValidate.value.postId);
             res.status(201).json(result);
         } catch (error: any) {
             res.status(400).json({message: error.message});
@@ -63,14 +77,14 @@ export const postRoutes = (app: express.Express) => {
         }
     })
 
-    app.get('/posts/:id', async (req: Request, res: Response) => {
+    app.get('/posts/:postId', async (req: Request, res: Response) => {
         try {
             const idPostValidate = idPostValidation.validate(req.params);
             if (!idPostValidate) {
                 return;
             }
 
-            const result = await postService.getPostById(idPostValidate.value.postId);
+            const result = await postService.getPostById(idPostValidate.value.postId    );
             res.status(201).json(result);
         } catch (error: any) {
             res.status(400).json({message: error.message});

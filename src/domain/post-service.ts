@@ -44,6 +44,9 @@ export class PostService {
     async getAllPosts(): Promise<Post[]> {
         return this.db.manager.find(Post, {
             relations: ["author", "comments", "parentPost", "userHaveLiked"],
+            order: {
+                createdAt: "DESC"
+            },
         });
     }
 
@@ -67,8 +70,26 @@ export class PostService {
     }
 
     async getPostById(postId: number, manager = this.db.manager): Promise<Post> {
-        const post = await manager.findOne(Post, {where: {id: postId}});
-        if (!post) throw new Error("Invalid post");
+        const post = await manager.findOne(Post, {
+            where: {id: postId},
+            relations: [
+                "comments",
+                "comments.author",
+                "author",
+                "parentPost",
+                "userHaveLiked"
+            ],
+            order: {
+                comments: {
+                    createdAt: "DESC"
+                }
+            }
+        });
+
+        if (!post) {
+            throw new Error("Invalid post");
+        }
+
         return post;
     }
 
@@ -78,15 +99,20 @@ export class PostService {
         await queryRunner.startTransaction();
 
         try {
+            const post = await queryRunner.manager.findOne(Post, {
+                where: {id: postId},
+                relations: ['userHaveLiked'],
+            });
             const user = await queryRunner.manager.findOne(User, {where: {id: userId}});
-            const post = await queryRunner.manager.findOne(Post, {where: {id: postId}});
 
             if (!user || !post) {
                 throw new Error("Invalid user or post");
             }
 
-            if (post.userHaveLiked.find(u => u.id === user.id)) {
-                post.userHaveLiked = post.userHaveLiked.filter(u => u.id !== user.id);
+            const userIndex = post.userHaveLiked.findIndex(u => u.id === user.id);
+
+            if (userIndex >= 0) {
+                post.userHaveLiked.splice(userIndex, 1);
             } else {
                 post.userHaveLiked.push(user);
             }
@@ -95,10 +121,22 @@ export class PostService {
             await queryRunner.commitTransaction();
         } catch (error: any) {
             await queryRunner.rollbackTransaction();
-            throw new Error(`Failed to like post: ${error.message}`);
+            throw new Error(`Failed to like/unlike post: ${error.message}`);
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async getComments(postId: number): Promise<Post[]> {
+        return this.db.manager.find(Post, {
+            where: {
+                parentPost: {id: postId}
+            },
+            relations: ["author", "comments", "parentPost", "userHaveLiked"],
+            order: {
+                createdAt: "DESC"
+            },
+        });
     }
 
 }

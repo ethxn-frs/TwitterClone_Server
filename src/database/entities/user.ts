@@ -1,11 +1,4 @@
-import {
-    Column,
-    Entity,
-    JoinTable,
-    ManyToMany,
-    OneToMany,
-    PrimaryGeneratedColumn,
-} from "typeorm";
+import {Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn,} from "typeorm";
 import {Conversation} from "./conversation";
 import {Message} from "./message";
 import {Post} from "./post";
@@ -36,7 +29,6 @@ export class User {
     @Column()
     birthDate!: Date;
 
-    // @JoinTable() est uniquement sur 'following'
     @ManyToMany(() => User, (user) => user.following)
     followers!: User[];
 
