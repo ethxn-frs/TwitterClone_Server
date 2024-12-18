@@ -2,6 +2,11 @@ import {DataSource} from "typeorm";
 import {Message} from "../database/entities/message";
 import {User} from "../database/entities/user";
 import {Conversation} from "../database/entities/conversation";
+import { UserService } from "./user-service";
+import { AppDataSource } from "../database/database";
+
+const userService = new UserService(AppDataSource);
+
 
 export class MessageService {
     constructor(private readonly db: DataSource) {
@@ -54,6 +59,7 @@ export class MessageService {
     }
 
     async getMessageById(messageId: number): Promise<Message> {
+
         const message = await this.db.manager.findOne(Message, {
             where: {id: messageId},
             relations: ["author", "conversation"]
@@ -63,4 +69,31 @@ export class MessageService {
 
         return message
     }
+
+    async seenMessageById(userId: number, messageId: number): Promise<void> {
+        const queryRunner = this.db.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        const message = await this.db.manager.findOne(Message, {
+            where: {id: messageId},
+            relations: ["author", "conversation", "seenBy"]
+        });
+        const user = await userService.getUserById(userId);
+
+        if (!user || !message){
+            throw new Error("User or message not found")
+        }
+        try {
+            message.seenBy.push(user);
+            await queryRunner.manager.save(Message, message);
+            await queryRunner.commitTransaction();
+        } catch (error: any) {
+            await queryRunner.rollbackTransaction();
+            throw new Error(`Failed to save message: ${error.message}`);
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
 }

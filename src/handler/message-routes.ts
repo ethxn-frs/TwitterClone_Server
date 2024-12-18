@@ -4,7 +4,8 @@ import {MessageService} from "../domain/message-service";
 import {
     createMessageValidation,
     idMessageValidation,
-    messagesConversationValidation
+    messagesConversationValidation,
+    validateMessageSeen
 } from "./validator/message-validator";
 
 const messageService = new MessageService(AppDataSource);
@@ -47,6 +48,20 @@ export const messageRoutes = (app: express.Express) => {
                 return;
             }
             const result = await messageService.sendMessage(createMessageValidate.value.conversationId, createMessageValidate.value.userId, createMessageValidate.value.content);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+    app.put('/messages/seenBy/:id', async (req: Request, res: Response)=>{
+        try {
+            const createMessageValidate = validateMessageSeen.validate(req.body);
+            const messageId = parseInt(req.params.id, 10);
+            if (!createMessageValidate) {
+                return;
+            }
+            const result = await messageService.seenMessageById(createMessageValidate.value.userId, messageId);
             res.status(200).json(result);
         } catch (error: any) {
             res.status(400).json({message: error.message});

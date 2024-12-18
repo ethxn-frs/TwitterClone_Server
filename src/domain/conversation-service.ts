@@ -10,13 +10,18 @@ export class ConversationService {
     constructor(private readonly db: DataSource) {
     }
 
-    async createConversation(name: string, creatorId: number, participantIds: number[]): Promise<Conversation> {
+    async createConversation(creatorId: number, participantIds: number[]): Promise<Conversation> {
 
         const creator = await userService.getUserById(creatorId);
         const participants = await userService.getUsersByIds(participantIds);
 
         if (!creator || participants.length === 0) {
             throw new Error("Invalid creator or participants.");
+        }
+
+        for (const participant of participants) {
+            participant.followers.forEach(user => console.log("abonnements : " + user.id));
+            participant.following.forEach(user => console.log("abonnés : " +user.id));
         }
 
         for (const participant of participants) {
@@ -29,7 +34,7 @@ export class ConversationService {
         }
 
         const conversation = new Conversation();
-        conversation.name = name;
+        conversation.name = Date.now.toString();
         conversation.users = [creator, ...participants];
         conversation.createdAt = new Date();
 
