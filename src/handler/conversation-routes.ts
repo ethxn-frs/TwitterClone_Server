@@ -1,20 +1,16 @@
 import express, {Request, Response} from "express";
 import {AppDataSource} from "../database/database";
 import {ConversationService} from "../domain/conversation-service";
-import {authenticate} from "../middleware/authenticate";
 import {idConversationValidation} from "./validator/conversation-validator";
 
 const conversationService = new ConversationService(AppDataSource);
 
 export const conversationRoutes = (app: express.Express) => {
 
-    app.post('/conversations', authenticate, async (req: Request, res: Response) => {
-        const {name, participantIds} = req.body;
-        //@ts-ignore
-        const creatorId = req.user.id;  // ID de l'utilisateur authentifié
-
+    app.post('/conversations', async (req: Request, res: Response) => {
+        const {participantIds, creatorId} = req.body;
         try {
-            const conversation = await conversationService.createConversation(name, creatorId, participantIds);
+            const conversation = await conversationService.createConversation(creatorId, participantIds);
             res.status(201).json(conversation);
         } catch (error: any) {
             res.status(400).json({message: error.message});
@@ -31,7 +27,7 @@ export const conversationRoutes = (app: express.Express) => {
         }
     })
 
-    app.post('/conversations/:conversationId/add-user', authenticate, async (req: Request, res: Response) => {
+    app.post('/conversations/:conversationId/add-user', async (req: Request, res: Response) => {
         const {conversationId} = req.params;
         const {userId} = req.body;
 
@@ -43,7 +39,7 @@ export const conversationRoutes = (app: express.Express) => {
         }
     });
 
-    app.post('/conversations/:conversationId/remove-user', authenticate, async (req: Request, res: Response) => {
+    app.post('/conversations/:conversationId/remove-user', async (req: Request, res: Response) => {
         const {conversationId} = req.params;
         const {userId} = req.body;
 
@@ -55,7 +51,7 @@ export const conversationRoutes = (app: express.Express) => {
         }
     });
 
-    app.get('/conversations', authenticate, async (req: Request, res: Response) => {
+    app.get('/conversations', async (req: Request, res: Response) => {
         //@ts-ignore
         const userId = req.user.id;
 

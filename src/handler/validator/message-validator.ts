@@ -15,6 +15,7 @@ export const createMessageValidation = Joi.object<CreateMessageRequest>({
     content: Joi.string().required(),
 })
 
+
 export interface CreateMessageRequest {
     conversationId: number,
     userId: number,
@@ -28,3 +29,10 @@ export const messagesConversationValidation = Joi.object<MessageConversationRequ
 export interface MessageConversationRequest {
     conversationId: number,
 }
+
+export interface IdUserSeenMessageRequest{
+    userId: number
+}
+export const validateMessageSeen = Joi.object<IdUserSeenMessageRequest>({
+    userId: Joi.number().required()
+})

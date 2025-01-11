@@ -77,6 +77,7 @@ export class UserService {
     async getUsersByIds(userIds: number[]): Promise<User[]> {
         const users = await this.db.manager.find(User, {
             where: {id: In(userIds)},
+            relations: { followers: true, following: true}
         });
 
         // Vérifie si tous les utilisateurs spécifiés ont été trouvés
