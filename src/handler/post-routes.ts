@@ -62,7 +62,7 @@ export const postRoutes = (app: express.Express) => {
         }
     })
 
-    app.put('/posts/:id/delete', async (req: Request, res: Response) => {
+    app.put('/posts/:postId/delete', async (req: Request, res: Response) => {
         try {
             const deletePostValidate = deletePostValidation.validate(req.params);
 

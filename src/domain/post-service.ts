@@ -43,6 +43,9 @@ export class PostService {
 
     async getAllPosts(): Promise<Post[]> {
         return this.db.manager.find(Post, {
+            where: {
+                deleted: false
+            },
             relations: ["author", "comments", "parentPost", "userHaveLiked"],
             order: {
                 createdAt: "DESC"
