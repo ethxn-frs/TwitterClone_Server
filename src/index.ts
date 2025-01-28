@@ -23,7 +23,9 @@ const main = async () => {
         process.exit(1);
     }
 
-    app.use(cors());
+    app.use(cors({
+        origin: '*'
+    }));
     app.use(express.json());
 
     try {
@@ -38,7 +40,7 @@ const main = async () => {
         process.exit(1);
     }
 
-    app.listen(port, () => {
+    app.listen(port, '0.0.0.0',() => {
         console.log(`Server running on port ${port}`);
     });
 };

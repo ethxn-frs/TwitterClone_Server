@@ -35,7 +35,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         console.error("Cannot contact database", error);
         process.exit(1);
     }
-    app.use((0, cors_1.default)());
+    app.use((0, cors_1.default)({
+        origin: '*'
+    }));
     app.use(express_1.default.json());
     try {
         (0, auth_routes_1.authRoutes)(app);
@@ -49,7 +51,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         console.error("Error setting up routes:", error);
         process.exit(1);
     }
-    app.listen(port, () => {
+    app.listen(port, '0.0.0.0', () => {
         console.log(`Server running on port ${port}`);
     });
 });

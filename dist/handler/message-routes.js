@@ -54,5 +54,19 @@ const messageRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
+    app.put('/messages/seenBy/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const createMessageValidate = message_validator_1.validateMessageSeen.validate(req.body);
+            const messageId = parseInt(req.params.id, 10);
+            if (!createMessageValidate) {
+                return;
+            }
+            const result = yield messageService.seenMessageById(createMessageValidate.value.userId, messageId);
+            res.status(200).json(result);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
 };
 exports.messageRoutes = messageRoutes;

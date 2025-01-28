@@ -96,6 +96,7 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             const users = yield this.db.manager.find(user_1.User, {
                 where: { id: (0, typeorm_1.In)(userIds) },
+                relations: { followers: true, following: true }
             });
             // Vérifie si tous les utilisateurs spécifiés ont été trouvés
             if (users.length !== userIds.length) {

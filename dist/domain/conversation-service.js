@@ -19,12 +19,16 @@ class ConversationService {
     constructor(db) {
         this.db = db;
     }
-    createConversation(name, creatorId, participantIds) {
+    createConversation(creatorId, participantIds) {
         return __awaiter(this, void 0, void 0, function* () {
             const creator = yield userService.getUserById(creatorId);
             const participants = yield userService.getUsersByIds(participantIds);
             if (!creator || participants.length === 0) {
                 throw new Error("Invalid creator or participants.");
+            }
+            for (const participant of participants) {
+                participant.followers.forEach(user => console.log("abonnements : " + user.id));
+                participant.following.forEach(user => console.log("abonnés : " + user.id));
             }
             for (const participant of participants) {
                 const followsCreator = participant.following.some(user => user.id === creatorId);
@@ -34,7 +38,7 @@ class ConversationService {
                 }
             }
             const conversation = new conversation_1.Conversation();
-            conversation.name = name;
+            conversation.name = Date.now.toString();
             conversation.users = [creator, ...participants];
             conversation.createdAt = new Date();
             return yield this.db.manager.save(conversation);

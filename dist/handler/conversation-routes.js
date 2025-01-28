@@ -12,16 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.conversationRoutes = void 0;
 const database_1 = require("../database/database");
 const conversation_service_1 = require("../domain/conversation-service");
-const authenticate_1 = require("../middleware/authenticate");
 const conversation_validator_1 = require("./validator/conversation-validator");
 const conversationService = new conversation_service_1.ConversationService(database_1.AppDataSource);
 const conversationRoutes = (app) => {
-    app.post('/conversations', authenticate_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        const { name, participantIds } = req.body;
-        //@ts-ignore
-        const creatorId = req.user.id; // ID de l'utilisateur authentifié
+    app.post('/conversations', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        const { participantIds, creatorId } = req.body;
         try {
-            const conversation = yield conversationService.createConversation(name, creatorId, participantIds);
+            const conversation = yield conversationService.createConversation(creatorId, participantIds);
             res.status(201).json(conversation);
         }
         catch (error) {
@@ -38,7 +35,7 @@ const conversationRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.post('/conversations/:conversationId/add-user', authenticate_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.post('/conversations/:conversationId/add-user', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { conversationId } = req.params;
         const { userId } = req.body;
         try {
@@ -49,7 +46,7 @@ const conversationRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.post('/conversations/:conversationId/remove-user', authenticate_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.post('/conversations/:conversationId/remove-user', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { conversationId } = req.params;
         const { userId } = req.body;
         try {
@@ -60,7 +57,7 @@ const conversationRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.get('/conversations', authenticate_1.authenticate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.get('/conversations', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //@ts-ignore
         const userId = req.user.id;
         try {
