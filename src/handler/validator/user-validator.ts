@@ -86,3 +86,12 @@ export const UsernameSearchValidation = Joi.object<UsernameSearchRequest>({
 export interface UsernameSearchRequest {
     username: string
 }
+
+
+export const searchUserValidation = Joi.object<SearchUserValidate>({
+    query: Joi.string().required(),
+})
+
+export interface SearchUserValidate {
+    query: string,
+}

@@ -1,8 +1,8 @@
-import {DataSource, In} from "typeorm";
-import {User} from "../database/entities/user";
-import {CreateUserRequest} from "../handler/validator/user-validator";
+import { DataSource, ILike, In } from "typeorm";
+import { User } from "../database/entities/user";
+import { CreateUserRequest } from "../handler/validator/user-validator";
 import bcrypt from "bcrypt";
-import {Message} from "../database/entities/message";
+import { Message } from "../database/entities/message";
 
 const SALT_ROUNDS = 10;
 
@@ -39,8 +39,8 @@ export class UserService {
     async existingUser(username: string, email: string): Promise<boolean> {
         const result = await this.db.manager.findOne(User, {
             where: [
-                {username: username},
-                {email: email}
+                { username: username },
+                { email: email }
             ],
         });
         return result != null;
@@ -48,7 +48,7 @@ export class UserService {
 
     async getUserById(userId: number): Promise<User> {
         const user = await this.db.manager.findOne(User, {
-            where: {id: userId},
+            where: { id: userId },
             relations: ['followers', 'following', 'messages', 'posts']
         })
         if (!user) throw new Error("User not found");
@@ -76,8 +76,8 @@ export class UserService {
 
     async getUsersByIds(userIds: number[]): Promise<User[]> {
         const users = await this.db.manager.find(User, {
-            where: {id: In(userIds)},
-            relations: { followers: true, following: true}
+            where: { id: In(userIds) },
+            relations: { followers: true, following: true }
         });
 
         // Vérifie si tous les utilisateurs spécifiés ont été trouvés
@@ -92,19 +92,19 @@ export class UserService {
 
     async getUserByUsername(username: string): Promise<User | null> {
         return await this.db.manager.findOne(User, {
-            where: {email: username},
+            where: { email: username },
         })
     }
 
     async searchUserByUsername(username: string): Promise<User[] | null> {
         return await this.db.manager
             .createQueryBuilder(User, 'user')
-            .where('user.username LIKE :username', {username: `%${username}%`})
+            .where('user.username LIKE :username', { username: `%${username}%` })
             .getMany();
     }
 
     async getUserByEmail(email: string): Promise<User> {
-        const user = await this.db.manager.findOne(User, {where: {email}});
+        const user = await this.db.manager.findOne(User, { where: { email } });
         if (!user) throw new Error("User not found");
         return user;
     }
@@ -189,4 +189,17 @@ export class UserService {
         }
     }
 
+    async searchUsersByContent(query: string): Promise<User[]> {
+        return this.db.manager.find(User, {
+            where: [
+                { username: ILike(`%${query}%`) },
+                { firstName: ILike(`%${query}%`) },
+                { lastName: ILike(`%${query}%`) },
+            ],
+            relations: ["followers", "following", "posts"],
+            order: {
+                createdAt: "DESC",
+            },
+        });
+    }
 }

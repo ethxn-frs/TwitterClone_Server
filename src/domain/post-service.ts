@@ -1,9 +1,10 @@
-import {DataSource} from "typeorm";
-import {Post} from "../database/entities/post";
-import {UserService} from "./user-service";
-import {AppDataSource} from "../database/database";
-import {CreatePostRequest} from "../handler/validator/post-validator";
-import {User} from "../database/entities/user";
+import { DataSource, ILike } from "typeorm";
+import { Post } from "../database/entities/post";
+import { UserService } from "./user-service";
+import { AppDataSource } from "../database/database";
+import { CreatePostRequest } from "../handler/validator/post-validator";
+import { User } from "../database/entities/user";
+import { relative } from "path";
 
 const userService = new UserService(AppDataSource);
 
@@ -74,7 +75,7 @@ export class PostService {
 
     async getPostById(postId: number, manager = this.db.manager): Promise<Post> {
         const post = await manager.findOne(Post, {
-            where: {id: postId},
+            where: { id: postId },
             relations: [
                 "comments",
                 "author",
@@ -105,10 +106,10 @@ export class PostService {
 
         try {
             const post = await queryRunner.manager.findOne(Post, {
-                where: {id: postId},
+                where: { id: postId },
                 relations: ['userHaveLiked'],
             });
-            const user = await queryRunner.manager.findOne(User, {where: {id: userId}});
+            const user = await queryRunner.manager.findOne(User, { where: { id: userId } });
 
             if (!user || !post) {
                 throw new Error("Invalid user or post");
@@ -135,7 +136,7 @@ export class PostService {
     async getComments(postId: number): Promise<Post[]> {
         return this.db.manager.find(Post, {
             where: {
-                parentPost: {id: postId}
+                parentPost: { id: postId }
             },
             relations: ["author", "comments", "parentPost", "userHaveLiked"],
             order: {
@@ -143,5 +144,19 @@ export class PostService {
             },
         });
     }
+
+    async searchPostsByContent(query: string): Promise<Post[]> {
+        return this.db.manager.find(Post, {
+            where: {
+                content: ILike(`%${query}%`),
+                deleted: false,
+            },
+            relations: ["author", "comments", "userHaveLiked"],
+            order: {
+                createdAt: "DESC",
+            },
+        });
+    }
+
 
 }

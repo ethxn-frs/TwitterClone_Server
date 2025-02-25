@@ -29,7 +29,22 @@ const postRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.put('/posts/:id/like', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.post('/posts/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const searchPostsValidate = post_validator_1.searchPostValidation.validate(req.body);
+            if (!searchPostsValidate) {
+                return;
+            }
+            console.log(searchPostsValidate.value.query);
+            console.log("---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+            const result = yield postService.searchPostsByContent(searchPostsValidate.value.query);
+            res.status(201).json(result);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
+    app.put('/posts/:postId/like', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const likePostValidate = post_validator_1.likePostValidation.validate(req.params);
             if (!likePostValidate) {
@@ -39,14 +54,27 @@ const postRoutes = (app) => {
             if (!userIdValidate) {
                 return;
             }
-            const result = yield postService.likePost(likePostValidate.value.postId, userIdValidate.value.userId);
+            const result = yield postService.likePost(userIdValidate.value.userId, likePostValidate.value.postId);
             res.status(201).json(result);
         }
         catch (error) {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.put('/posts/:id/delete', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.get('/posts/:postId/comments', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const postIdValidate = post_validator_1.idPostValidation.validate(req.params);
+            if (!postIdValidate) {
+                return;
+            }
+            const result = yield postService.getComments(postIdValidate.value.postId);
+            res.status(201).json(result);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
+    app.put('/posts/:postId/delete', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const deletePostValidate = post_validator_1.deletePostValidation.validate(req.params);
             if (!deletePostValidate) {
@@ -59,7 +87,7 @@ const postRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.get('/posts/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.get('/posts/:postId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const idPostValidate = post_validator_1.idPostValidation.validate(req.params);
             if (!idPostValidate) {

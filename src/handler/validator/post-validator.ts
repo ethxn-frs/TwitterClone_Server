@@ -36,3 +36,11 @@ export const likePostValidation = Joi.object<LikePostValidation>({
 export interface LikePostValidation {
     postId: number,
 }
+
+export const searchPostValidation = Joi.object<SearchPostValidate>({
+    query: Joi.string().required(),
+})
+
+export interface SearchPostValidate {
+    query: string,
+}

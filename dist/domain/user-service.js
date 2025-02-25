@@ -96,6 +96,7 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             const users = yield this.db.manager.find(user_1.User, {
                 where: { id: (0, typeorm_1.In)(userIds) },
+                relations: { followers: true, following: true }
             });
             // Vérifie si tous les utilisateurs spécifiés ont été trouvés
             if (users.length !== userIds.length) {
@@ -198,6 +199,21 @@ class UserService {
             finally {
                 yield queryRunner.release();
             }
+        });
+    }
+    searchUsersByContent(query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.manager.find(user_1.User, {
+                where: [
+                    { username: (0, typeorm_1.ILike)(`%${query}%`) },
+                    { firstName: (0, typeorm_1.ILike)(`%${query}%`) },
+                    { lastName: (0, typeorm_1.ILike)(`%${query}%`) },
+                ],
+                relations: ["followers", "following", "posts"],
+                order: {
+                    createdAt: "DESC",
+                },
+            });
         });
     }
 }

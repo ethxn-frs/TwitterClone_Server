@@ -65,13 +65,15 @@ const userRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.post('/users/username/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.post('/users/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const searchValidation = user_validator_1.UsernameSearchValidation.validate(req.body);
-            if (!searchValidation) {
+            const searchUsersValidate = user_validator_1.searchUserValidation.validate(req.body);
+            if (!searchUsersValidate) {
                 return;
             }
-            const result = yield userService.searchUserByUsername(searchValidation.value.username);
+            console.log(searchUsersValidate.value.query);
+            console.log("---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+            const result = yield userService.searchUsersByContent(searchUsersValidate.value.query);
             res.status(201).json(result);
         }
         catch (error) {

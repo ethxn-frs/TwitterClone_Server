@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PostService = void 0;
+const typeorm_1 = require("typeorm");
 const post_1 = require("../database/entities/post");
 const user_service_1 = require("./user-service");
 const database_1 = require("../database/database");
@@ -51,7 +52,13 @@ class PostService {
     getAllPosts() {
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.manager.find(post_1.Post, {
+                where: {
+                    deleted: false
+                },
                 relations: ["author", "comments", "parentPost", "userHaveLiked"],
+                order: {
+                    createdAt: "DESC"
+                },
             });
         });
     }
@@ -77,9 +84,26 @@ class PostService {
     }
     getPostById(postId_1) {
         return __awaiter(this, arguments, void 0, function* (postId, manager = this.db.manager) {
-            const post = yield manager.findOne(post_1.Post, { where: { id: postId } });
-            if (!post)
+            const post = yield manager.findOne(post_1.Post, {
+                where: { id: postId },
+                relations: [
+                    "comments",
+                    "author",
+                    "parentPost",
+                    "userHaveLiked",
+                    "comments.author",
+                    "comments.userHaveLiked",
+                    "comments.comments"
+                ],
+                order: {
+                    comments: {
+                        createdAt: "DESC"
+                    }
+                }
+            });
+            if (!post) {
                 throw new Error("Invalid post");
+            }
             return post;
         });
     }
@@ -89,13 +113,17 @@ class PostService {
             yield queryRunner.connect();
             yield queryRunner.startTransaction();
             try {
+                const post = yield queryRunner.manager.findOne(post_1.Post, {
+                    where: { id: postId },
+                    relations: ['userHaveLiked'],
+                });
                 const user = yield queryRunner.manager.findOne(user_1.User, { where: { id: userId } });
-                const post = yield queryRunner.manager.findOne(post_1.Post, { where: { id: postId } });
                 if (!user || !post) {
                     throw new Error("Invalid user or post");
                 }
-                if (post.userHaveLiked.find(u => u.id === user.id)) {
-                    post.userHaveLiked = post.userHaveLiked.filter(u => u.id !== user.id);
+                const userIndex = post.userHaveLiked.findIndex(u => u.id === user.id);
+                if (userIndex >= 0) {
+                    post.userHaveLiked.splice(userIndex, 1);
                 }
                 else {
                     post.userHaveLiked.push(user);
@@ -105,11 +133,38 @@ class PostService {
             }
             catch (error) {
                 yield queryRunner.rollbackTransaction();
-                throw new Error(`Failed to like post: ${error.message}`);
+                throw new Error(`Failed to like/unlike post: ${error.message}`);
             }
             finally {
                 yield queryRunner.release();
             }
+        });
+    }
+    getComments(postId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.manager.find(post_1.Post, {
+                where: {
+                    parentPost: { id: postId }
+                },
+                relations: ["author", "comments", "parentPost", "userHaveLiked"],
+                order: {
+                    createdAt: "DESC"
+                },
+            });
+        });
+    }
+    searchPostsByContent(query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.manager.find(post_1.Post, {
+                where: {
+                    content: (0, typeorm_1.ILike)(`%${query}%`),
+                    deleted: false,
+                },
+                relations: ["author", "comments", "userHaveLiked"],
+                order: {
+                    createdAt: "DESC",
+                },
+            });
         });
     }
 }

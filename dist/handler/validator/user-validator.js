@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UsernameSearchValidation = exports.UnfollowRequestValidation = exports.FollowRequestValidation = exports.lostPasswordValidation = exports.createUserValidation = exports.changePasswordValidation = exports.loginValidation = exports.idUserValidation = void 0;
+exports.searchUserValidation = exports.UsernameSearchValidation = exports.UnfollowRequestValidation = exports.FollowRequestValidation = exports.lostPasswordValidation = exports.createUserValidation = exports.changePasswordValidation = exports.loginValidation = exports.idUserValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 exports.idUserValidation = joi_1.default.object({
     userId: joi_1.default.number().required()
@@ -39,4 +39,7 @@ exports.UnfollowRequestValidation = joi_1.default.object({
 });
 exports.UsernameSearchValidation = joi_1.default.object({
     username: joi_1.default.string().min(1).max(20).required()
+});
+exports.searchUserValidation = joi_1.default.object({
+    query: joi_1.default.string().required(),
 });
