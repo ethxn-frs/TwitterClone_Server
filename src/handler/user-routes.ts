@@ -1,13 +1,12 @@
-import express, { Request, Response } from "express";
+import express, {Request, Response} from "express";
 import {
     createUserValidation,
     FollowRequestValidation,
     searchUserValidation,
-    UnfollowRequestValidation,
-    UsernameSearchValidation
+    UnfollowRequestValidation
 } from "./validator/user-validator";
-import { AppDataSource } from "../database/database";
-import { UserService } from "../domain/user-service";
+import {AppDataSource} from "../database/database";
+import {UserService} from "../domain/user-service";
 
 const userService = new UserService(AppDataSource);
 
@@ -19,10 +18,10 @@ export const userRoutes = (app: express.Express) => {
 
             const userRequestValidation = createUserValidation.validate(req.body);
             const newUser = await userService.signUp(userRequestValidation.value);
-            const { password, ...userWithoutPassword } = newUser;
+            const {password, ...userWithoutPassword} = newUser;
             res.status(201).json(userWithoutPassword);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -38,7 +37,7 @@ export const userRoutes = (app: express.Express) => {
             const result = await userService.followUser(followValidation.value.followerId, followValidation.value.followeeId);
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -53,7 +52,7 @@ export const userRoutes = (app: express.Express) => {
             const result = await userService.unfollowUser(unfollowValidation.value.followerId, unfollowValidation.value.followeeId);
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     })
 
@@ -64,10 +63,52 @@ export const userRoutes = (app: express.Express) => {
             if (!searchUsersValidate) {
                 return;
             }
-            console.log(searchUsersValidate.value.query)
+            console.log(searchUsersValidate.value)
+            console.log(req.body)
             console.log("---------------------------------------------------------------------------------------------------------------------------------------------------------------------")
             const result = await userService.searchUsersByContent(searchUsersValidate.value.query);
             res.status(201).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    });
+
+
+    app.get('/users/:id', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.getUserById(userId);
+            res.status(201).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+    app.get('/users/:id/posts', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.getUserPosts(userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    });
+
+    app.get('/users/:id/comments', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.getUserComments(userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    });
+
+    app.get('/users/:id/likes', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.getUserLikedPosts(userId);
+            res.status(200).json(result);
         } catch (error: any) {
             res.status(400).json({ message: error.message });
         }
@@ -80,7 +121,7 @@ export const userRoutes = (app: express.Express) => {
             const result = await userService.getUserFollower(userId);
             res.status(200).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -90,7 +131,7 @@ export const userRoutes = (app: express.Express) => {
             const result = await userService.getUserFollowing(userId);
             res.status(200).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -100,26 +141,16 @@ export const userRoutes = (app: express.Express) => {
             const result = await userService.getUserMessages(userId);
             res.status(200).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
-
-    app.get('/users/:id', async (req: Request, res: Response) => {
-        try {
-            const userId: number = parseInt(req.params.id, 10);
-            const result = await userService.getUserById(userId);
-            res.status(201).json(result);
-        } catch (error: any) {
-            res.status(400).json({ message: error.message });
-        }
-    })
 
     app.get('/users', async (req: Request, res: Response) => {
         try {
             const result = await userService.getAllUsers();
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     })
 }

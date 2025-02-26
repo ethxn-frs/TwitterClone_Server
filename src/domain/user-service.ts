@@ -1,8 +1,9 @@
-import { DataSource, ILike, In } from "typeorm";
-import { User } from "../database/entities/user";
-import { CreateUserRequest } from "../handler/validator/user-validator";
+import {DataSource, ILike, In, IsNull, Not} from "typeorm";
+import {User} from "../database/entities/user";
+import {CreateUserRequest} from "../handler/validator/user-validator";
 import bcrypt from "bcrypt";
-import { Message } from "../database/entities/message";
+import {Message} from "../database/entities/message";
+import {Post} from "../database/entities/post";
 
 const SALT_ROUNDS = 10;
 
@@ -39,8 +40,8 @@ export class UserService {
     async existingUser(username: string, email: string): Promise<boolean> {
         const result = await this.db.manager.findOne(User, {
             where: [
-                { username: username },
-                { email: email }
+                {username: username},
+                {email: email}
             ],
         });
         return result != null;
@@ -48,7 +49,7 @@ export class UserService {
 
     async getUserById(userId: number): Promise<User> {
         const user = await this.db.manager.findOne(User, {
-            where: { id: userId },
+            where: {id: userId},
             relations: ['followers', 'following', 'messages', 'posts']
         })
         if (!user) throw new Error("User not found");
@@ -76,8 +77,8 @@ export class UserService {
 
     async getUsersByIds(userIds: number[]): Promise<User[]> {
         const users = await this.db.manager.find(User, {
-            where: { id: In(userIds) },
-            relations: { followers: true, following: true }
+            where: {id: In(userIds)},
+            relations: {followers: true, following: true}
         });
 
         // Vérifie si tous les utilisateurs spécifiés ont été trouvés
@@ -92,19 +93,19 @@ export class UserService {
 
     async getUserByUsername(username: string): Promise<User | null> {
         return await this.db.manager.findOne(User, {
-            where: { email: username },
+            where: {email: username},
         })
     }
 
     async searchUserByUsername(username: string): Promise<User[] | null> {
         return await this.db.manager
             .createQueryBuilder(User, 'user')
-            .where('user.username LIKE :username', { username: `%${username}%` })
+            .where('user.username LIKE :username', {username: `%${username}%`})
             .getMany();
     }
 
     async getUserByEmail(email: string): Promise<User> {
-        const user = await this.db.manager.findOne(User, { where: { email } });
+        const user = await this.db.manager.findOne(User, {where: {email}});
         if (!user) throw new Error("User not found");
         return user;
     }
@@ -192,9 +193,9 @@ export class UserService {
     async searchUsersByContent(query: string): Promise<User[]> {
         return this.db.manager.find(User, {
             where: [
-                { username: ILike(`%${query}%`) },
-                { firstName: ILike(`%${query}%`) },
-                { lastName: ILike(`%${query}%`) },
+                {username: ILike(`%${query}%`)},
+                {firstName: ILike(`%${query}%`)},
+                {lastName: ILike(`%${query}%`)},
             ],
             relations: ["followers", "following", "posts"],
             order: {
@@ -202,4 +203,47 @@ export class UserService {
             },
         });
     }
+
+    async getUserPosts(userId: number): Promise<Post[]> {
+        try {
+            return await this.db.manager.find(Post, {
+                where: {author: {id: userId}, deleted: false},
+                order: {createdAt: "DESC"},
+                relations: ["author", "comments", "userHaveLiked"],
+            }) || [];
+        } catch (error) {
+            console.error("Error fetching user posts:", error);
+            return [];
+        }
+    }
+
+    async getUserComments(userId: number): Promise<Post[]> {
+        try {
+            return await this.db.manager.find(Post, {
+                where: {author: {id: userId}, parentPost: Not(IsNull()), deleted: false},
+                order: {createdAt: "DESC"},
+                relations: ["author", "parentPost", "userHaveLiked", "comments"],
+            }) || [];
+        } catch (error) {
+            console.error("Error fetching user comments:", error);
+            return [];
+        }
+    }
+
+    async getUserLikedPosts(userId: number): Promise<Post[]> {
+        try {
+            return await this.db.manager
+                .createQueryBuilder(Post, "post")
+                .leftJoinAndSelect("post.userHaveLiked", "user")
+                .leftJoinAndSelect("post.author", "author")
+                .leftJoinAndSelect("post.comments", "comments ")
+                .where("user.id = :userId", {userId})
+                .orderBy("post.createdAt", "DESC")
+                .getMany() || [];
+        } catch (error) {
+            console.error("Error fetching liked posts:", error);
+            return [];
+        }
+    }
+
 }
