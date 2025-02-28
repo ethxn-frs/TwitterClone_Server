@@ -7,9 +7,13 @@ import {AppDataSource} from "../database/database";
 const userService = new UserService(AppDataSource);
 
 export class ConversationService {
+    
     constructor(private readonly db: DataSource) {
     }
 
+    async deleteAllConversations(): Promise<void>{
+        await this.db.manager.delete(Conversation, {});
+    }
     async createConversation(creatorId: number, participantIds: number[]): Promise<Conversation> {
 
         const creator = await userService.getUserById(creatorId);
@@ -78,6 +82,14 @@ export class ConversationService {
             .leftJoinAndSelect("conversation.users", "user")
             .leftJoinAndSelect("conversation.messages", "message")
             .where("user.id = :userId", {userId})
+            .getMany();
+    }
+
+    async getAllTheConversations(): Promise<Conversation[]> {
+        return await this.db.manager
+            .createQueryBuilder(Conversation, "conversation")
+            .leftJoinAndSelect("conversation.users", "user")
+            .leftJoinAndSelect("conversation.messages", "message")
             .getMany();
     }
 

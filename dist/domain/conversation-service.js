@@ -19,6 +19,11 @@ class ConversationService {
     constructor(db) {
         this.db = db;
     }
+    deleteAllConversations() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.db.manager.delete(conversation_1.Conversation, {});
+        });
+    }
     createConversation(creatorId, participantIds) {
         return __awaiter(this, void 0, void 0, function* () {
             const creator = yield userService.getUserById(creatorId);
@@ -80,6 +85,15 @@ class ConversationService {
                 .leftJoinAndSelect("conversation.users", "user")
                 .leftJoinAndSelect("conversation.messages", "message")
                 .where("user.id = :userId", { userId })
+                .getMany();
+        });
+    }
+    getAllTheConversations() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.db.manager
+                .createQueryBuilder(conversation_1.Conversation, "conversation")
+                .leftJoinAndSelect("conversation.users", "user")
+                .leftJoinAndSelect("conversation.messages", "message")
                 .getMany();
         });
     }

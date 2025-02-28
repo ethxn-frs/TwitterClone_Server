@@ -59,7 +59,7 @@ export const userRoutes = (app: express.Express) => {
     app.post('/users/username/search', async (req: Request, res: Response) => {
 
         try {
-
+            
             const searchValidation = UsernameSearchValidation.validate(req.body);
             if (!searchValidation) {
                 return;

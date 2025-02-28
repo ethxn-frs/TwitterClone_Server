@@ -28,6 +28,7 @@ const conversationRoutes = (app) => {
     app.get('/conversations/user/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const userId = parseInt(req.params.id, 10);
+            console.log(userId);
             const result = yield conversationService.getUserConversations(userId);
             res.status(200).json(result);
         }
@@ -57,22 +58,30 @@ const conversationRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
+    app.get('/conversations/:conversationId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const conversationIdValidate = conversation_validator_1.idConversationValidation.validate(req.params);
+            const conversation = yield conversationService.getConversationById(conversationIdValidate.value.conversationId);
+            res.status(200).json(conversation);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
     app.get('/conversations', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //@ts-ignore
-        const userId = req.user.id;
         try {
-            const conversations = yield conversationService.getUserConversations(userId);
+            const conversations = yield conversationService.getAllTheConversations();
             res.status(200).json(conversations);
         }
         catch (error) {
             res.status(400).json({ message: error.message });
         }
     }));
-    app.get('/conversations/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    app.delete('/conversations', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const conversationIdValidate = conversation_validator_1.idConversationValidation.validate(req.params);
-            const conversation = yield conversationService.getConversationById(conversationIdValidate.value.conversationId);
-            res.status(200).json(conversation);
+            yield conversationService.deleteAllConversations();
+            res.status(200).json({ message: "Toutes les conversations sont supprimées." });
         }
         catch (error) {
             res.status(400).json({ message: error.message });

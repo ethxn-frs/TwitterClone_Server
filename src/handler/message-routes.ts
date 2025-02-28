@@ -7,6 +7,7 @@ import {
     messagesConversationValidation,
     validateMessageSeen
 } from "./validator/message-validator";
+import { number } from "joi";
 
 const messageService = new MessageService(AppDataSource);
 
@@ -16,11 +17,11 @@ export const messageRoutes = (app: express.Express) => {
     app.get('/messages/conversation/:id', async (req: Request, res: Response) => {
         try {
             const messagesConversationValidate = messagesConversationValidation.validate(req.params);
-
             if (!messagesConversationValidate) {
                 return;
             }
-            const result = await messageService.getMessagesInConversation(messagesConversationValidate.value.conversationId);
+            const conversationId = parseInt(req.params.id);
+            const result = await messageService.getMessagesInConversation(conversationId);
             res.status(201).json(result);
         } catch (error: any) {
             res.status(400).json({message: error.message});

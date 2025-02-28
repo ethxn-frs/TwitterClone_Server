@@ -37,6 +37,7 @@ export class MessageService {
     }
 
     async getMessagesInConversation(conversationId: number): Promise<Message[]> {
+        console.log(conversationId);
         return await this.db.manager.find(Message, {
             where: {conversation: {id: conversationId}},
             relations: ["author"],

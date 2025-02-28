@@ -7,6 +7,7 @@ const conversationService = new ConversationService(AppDataSource);
 
 export const conversationRoutes = (app: express.Express) => {
 
+
     app.post('/conversations', async (req: Request, res: Response) => {
         const {participantIds, creatorId} = req.body;
         try {
@@ -20,7 +21,9 @@ export const conversationRoutes = (app: express.Express) => {
     app.get('/conversations/user/:id', async (req: Request, res: Response) => {
         try {
             const userId = parseInt(req.params.id, 10);
+            console.log(userId);
             const result = await conversationService.getUserConversations(userId);
+
             res.status(200).json(result);
         } catch (error: any) {
             res.status(400).json({message: error.message});
@@ -51,19 +54,7 @@ export const conversationRoutes = (app: express.Express) => {
         }
     });
 
-    app.get('/conversations', async (req: Request, res: Response) => {
-        //@ts-ignore
-        const userId = req.user.id;
-
-        try {
-            const conversations = await conversationService.getUserConversations(userId);
-            res.status(200).json(conversations);
-        } catch (error: any) {
-            res.status(400).json({message: error.message});
-        }
-    });
-
-    app.get('/conversations/:id', async (req: Request, res: Response) => {
+    app.get('/conversations/:conversationId', async (req: Request, res: Response) => {
         try {
             const conversationIdValidate = idConversationValidation.validate(req.params);
             const conversation = await conversationService.getConversationById(conversationIdValidate.value.conversationId);
@@ -72,4 +63,26 @@ export const conversationRoutes = (app: express.Express) => {
             res.status(400).json({message: error.message});
         }
     });
+
+    app.get('/conversations', async (req: Request, res: Response) => {
+        //@ts-ignore
+        try {
+            const conversations = await conversationService.getAllTheConversations();
+            res.status(200).json(conversations);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    });
+
+    app.delete('/conversations', async (req: Request, res: Response) => {
+        try{
+            await conversationService.deleteAllConversations();
+            res.status(200).json({ message: "Toutes les conversations sont supprimées."});
+        }catch(error: any){
+            res.status(400).json({ message : error.message});
+        }
+    });
+
+
+   
 };
