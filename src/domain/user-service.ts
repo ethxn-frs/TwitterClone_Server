@@ -65,6 +65,27 @@ export class UserService {
         return user.followers;
     }
 
+    async getUserFollowersAndFollowingCount(userId: number): Promise<[followers: number, following: number]> {
+        try {
+            const user = await this.db.manager.findOne(User, {
+                where: {id: userId},
+                relations: ["followers", "following"]
+            });
+
+            if (!user) {
+                throw new Error("Utilisateur introuvable.");
+            }
+
+            const followersCount = user.followers.length;
+            const followingCount = user.following.length;
+
+            return [followersCount, followingCount];
+        } catch (error) {
+            console.error("Erreur lors de la récupération des followers/following:", error);
+            throw new Error("Impossible de récupérer les informations de followers/following.");
+        }
+    }
+
     async getUserFollowing(userId: number): Promise<User[]> {
         const user = await this.getUserById(userId);
         return user.following;
@@ -244,6 +265,19 @@ export class UserService {
             console.error("Error fetching liked posts:", error);
             return [];
         }
+    }
+
+    async isFollowing(followerId: number, followeeId: number): Promise<boolean> {
+        const follower = await this.db.manager.findOne(User, {
+            where: {id: followerId},
+            relations: ["following"]
+        });
+
+        if (!follower) {
+            throw new Error("Utilisateur non trouvé");
+        }
+
+        return follower.following.some(user => user.id === followeeId);
     }
 
 }

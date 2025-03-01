@@ -56,6 +56,8 @@ export const userRoutes = (app: express.Express) => {
         }
     })
 
+    app.put('/users/username')
+
     app.post('/users/search', async (req: Request, res: Response) => {
         try {
             const searchUsersValidate = searchUserValidation.validate(req.body);
@@ -90,7 +92,7 @@ export const userRoutes = (app: express.Express) => {
             const result = await userService.getUserPosts(userId);
             res.status(200).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -100,7 +102,7 @@ export const userRoutes = (app: express.Express) => {
             const result = await userService.getUserComments(userId);
             res.status(200).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -110,7 +112,7 @@ export const userRoutes = (app: express.Express) => {
             const result = await userService.getUserLikedPosts(userId);
             res.status(200).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -135,6 +137,16 @@ export const userRoutes = (app: express.Express) => {
         }
     });
 
+    app.get('/users/:id/followers-following/count', async (req: Request, res: Response) => {
+        const userId = parseInt(req.params.id);
+        try {
+            const [followers, following] = await userService.getUserFollowersAndFollowingCount(userId);
+            res.status(200).json({followers, following});
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    });
+
     app.get('/users/:id/messages', async (req: Request, res: Response) => {
         try {
             const userId: number = parseInt(req.params.id, 10);
@@ -153,4 +165,18 @@ export const userRoutes = (app: express.Express) => {
             res.status(400).json({message: error.message});
         }
     })
+
+    app.get('/isFollowing', async (req: Request, res: Response) => {
+        try {
+            const {followerId, followeeId} = req.query;
+
+            if (!followerId || !followeeId) {
+                res.status(400).json({message: "IDs manquants"});
+            }
+            const isFollowing = await userService.isFollowing(Number(followerId), Number(followeeId));
+            res.status(200).json({isFollowing});
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    });
 }

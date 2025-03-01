@@ -29,6 +29,21 @@ export class User {
     @Column()
     birthDate!: Date;
 
+    @Column({nullable: true})
+    profilePictureUrl?: string;
+
+    @Column({nullable: true})
+    coverPictureUrl?: string;
+
+    @Column({nullable: true})
+    location?: string;
+
+    @Column({type: "text", nullable: true})
+    bio?: string;
+
+    @Column({nullable: true})
+    website?: string;
+
     @ManyToMany(() => User, (user) => user.following)
     followers!: User[];
 
@@ -48,9 +63,9 @@ export class User {
     @OneToMany(() => Message, (message) => message.author)
     messages!: Message[];
 
-    @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
+    @Column({type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     createdAt!: Date;
 
-    @Column({type: 'timestamp', nullable: true, onUpdate: 'CURRENT_TIMESTAMP'})
+    @Column({type: "timestamp", nullable: true, onUpdate: "CURRENT_TIMESTAMP"})
     updatedAt!: Date | null;
 }
