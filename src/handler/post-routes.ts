@@ -1,6 +1,6 @@
-import express, { Request, Response } from "express";
-import { AppDataSource } from "../database/database";
-import { PostService } from "../domain/post-service";
+import express, {Request, Response} from "express";
+import {AppDataSource} from "../database/database";
+import {PostService} from "../domain/post-service";
 import {
     createPostValidation,
     deletePostValidation,
@@ -8,7 +8,7 @@ import {
     likePostValidation,
     searchPostValidation
 } from "./validator/post-validator";
-import { idUserValidation } from "./validator/user-validator";
+import {idUserValidation} from "./validator/user-validator";
 
 const postService = new PostService(AppDataSource);
 
@@ -25,7 +25,7 @@ export const postRoutes = (app: express.Express) => {
             res.status(201).json(result);
         } catch (error: any) {
 
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -40,7 +40,7 @@ export const postRoutes = (app: express.Express) => {
             const result = await postService.searchPostsByContent(searchPostsValidate.value.query);
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     });
 
@@ -61,7 +61,7 @@ export const postRoutes = (app: express.Express) => {
             const result = await postService.likePost(userIdValidate.value.userId, likePostValidate.value.postId);
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     })
 
@@ -75,7 +75,7 @@ export const postRoutes = (app: express.Express) => {
             const result = await postService.getComments(postIdValidate.value.postId);
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     })
 
@@ -90,7 +90,7 @@ export const postRoutes = (app: express.Express) => {
             const result = await postService.deletePost(deletePostValidate.value.postId);
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     })
 
@@ -104,7 +104,7 @@ export const postRoutes = (app: express.Express) => {
             const result = await postService.getPostById(idPostValidate.value.postId);
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
         }
     })
 
@@ -113,7 +113,17 @@ export const postRoutes = (app: express.Express) => {
             const result = await postService.getAllPosts();
             res.status(201).json(result);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({message: error.message});
+        }
+    })
+
+    app.get('/posts/following/:userId', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.userId, 10);
+            const result = await postService.getFollowingPost(userId);
+            res.status(201).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
         }
     })
 }
