@@ -20,6 +20,11 @@ class MessageService {
     constructor(db) {
         this.db = db;
     }
+    deleteMessageById(messageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.db.manager.delete(message_1.Message, { id: messageId });
+        });
+    }
     sendMessage(conversationId, userId, content) {
         return __awaiter(this, void 0, void 0, function* () {
             const conversation = yield this.db.manager.findOne(conversation_1.Conversation, {
@@ -43,6 +48,7 @@ class MessageService {
     }
     getMessagesInConversation(conversationId) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(conversationId);
             return yield this.db.manager.find(message_1.Message, {
                 where: { conversation: { id: conversationId } },
                 relations: ["author"],
@@ -98,6 +104,21 @@ class MessageService {
             finally {
                 yield queryRunner.release();
             }
+        });
+    }
+    deleteMessageSeenByIdMessage(userId, messageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const conversationId = (yield this.getMessageById(messageId)).conversation.id;
+            const messages = yield this.db.manager.find(message_1.Message, {
+                where: { conversation: { id: conversationId } },
+                relations: ["seenBy"]
+            });
+            const messagesToUpdate = messages.filter(msg => msg.seenBy.some(user => user.id === userId));
+            yield this.db.manager
+                .createQueryBuilder()
+                .relation("Message", "seenBy")
+                .of(messageId)
+                .remove(userId);
         });
     }
 }

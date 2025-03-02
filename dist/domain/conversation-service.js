@@ -24,6 +24,11 @@ class ConversationService {
             yield this.db.manager.delete(conversation_1.Conversation, {});
         });
     }
+    deleteConversationById(conversationId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.db.manager.delete(conversation_1.Conversation, { id: conversationId });
+        });
+    }
     createConversation(creatorId, participantIds) {
         return __awaiter(this, void 0, void 0, function* () {
             const creator = yield userService.getUserById(creatorId);
@@ -84,6 +89,7 @@ class ConversationService {
                 .createQueryBuilder(conversation_1.Conversation, "conversation")
                 .leftJoinAndSelect("conversation.users", "user")
                 .leftJoinAndSelect("conversation.messages", "message")
+                .leftJoinAndSelect("messages.seenBy", "user")
                 .where("user.id = :userId", { userId })
                 .getMany();
         });

@@ -12,6 +12,10 @@ export class MessageService {
     constructor(private readonly db: DataSource) {
     }
 
+    async deleteMessageById(messageId: number): Promise<void> {
+        await this.db.manager.delete(Message, { id: messageId } );
+    }
+
     async sendMessage(conversationId: number, userId: number, content: string): Promise<Message> {
         const conversation = await this.db.manager.findOne(Conversation, {
             where: {id: conversationId},
@@ -32,7 +36,6 @@ export class MessageService {
         message.content = content;
         message.sentAt = new Date();
         message.conversation = conversation;
-
         return await this.db.manager.save(message);
     }
 
@@ -95,6 +98,24 @@ export class MessageService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async deleteMessageSeenByIdMessage(userId: number, messageId: number): Promise<void> {
+
+        const conversationId = (await this.getMessageById(messageId)).conversation.id;
+        const messages = await this.db.manager.find(Message, {
+            where: { conversation: { id: conversationId } },
+            relations: ["seenBy"]
+        });
+
+        const messagesToUpdate = messages.filter(msg => 
+            msg.seenBy.some(user => user.id === userId)
+        );
+        await this.db.manager
+            .createQueryBuilder()
+            .relation("Message", "seenBy")
+            .of(messageId)
+            .remove(userId);
     }
 
 }

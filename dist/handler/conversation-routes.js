@@ -87,5 +87,16 @@ const conversationRoutes = (app) => {
             res.status(400).json({ message: error.message });
         }
     }));
+    app.delete('/conversations/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { value, error } = conversation_validator_1.idConversationValidation.validate(req.params.id);
+            const conversationId = parseInt(value, 10);
+            yield conversationService.deleteConversationById(conversationId);
+            res.status(200).json();
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
 };
 exports.conversationRoutes = conversationRoutes;

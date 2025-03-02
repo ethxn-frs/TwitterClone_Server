@@ -14,6 +14,11 @@ export class ConversationService {
     async deleteAllConversations(): Promise<void>{
         await this.db.manager.delete(Conversation, {});
     }
+
+    async deleteConversationById(conversationId: number): Promise<void> {
+        await this.db.manager.delete(Conversation, { id: conversationId } );
+    }
+
     async createConversation(creatorId: number, participantIds: number[]): Promise<Conversation> {
 
         const creator = await userService.getUserById(creatorId);
@@ -62,6 +67,8 @@ export class ConversationService {
         }
     }
 
+
+
     async removeUserFromConversation(conversationId: number, userId: number): Promise<void> {
         const conversation = await this.db.manager.findOne(Conversation, {
             where: {id: conversationId},
@@ -79,9 +86,10 @@ export class ConversationService {
     async getUserConversations(userId: number): Promise<Conversation[]> {
         return await this.db.manager
             .createQueryBuilder(Conversation, "conversation")
-            .leftJoinAndSelect("conversation.users", "user")
+            .leftJoinAndSelect("conversation.users", "conversationUser") 
             .leftJoinAndSelect("conversation.messages", "message")
-            .where("user.id = :userId", {userId})
+            .leftJoinAndSelect("message.seenBy", "seenUser") 
+            .where("conversationUser.id = :userId", { userId }) 
             .getMany();
     }
 

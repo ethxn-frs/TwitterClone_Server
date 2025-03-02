@@ -21,7 +21,8 @@ const messageRoutes = (app) => {
             if (!messagesConversationValidate) {
                 return;
             }
-            const result = yield messageService.getMessagesInConversation(messagesConversationValidate.value.conversationId);
+            const conversationId = parseInt(req.params.id);
+            const result = yield messageService.getMessagesInConversation(conversationId);
             res.status(201).json(result);
         }
         catch (error) {
@@ -63,6 +64,29 @@ const messageRoutes = (app) => {
             }
             const result = yield messageService.seenMessageById(createMessageValidate.value.userId, messageId);
             res.status(200).json(result);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
+    app.delete('/messages/seenBy/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { value, error } = message_validator_1.validateMessageSeen.validate(req.body);
+            const messageId = parseInt(req.params.id, 10);
+            const userId = value.userId;
+            const result = yield messageService.deleteMessageSeenByIdMessage(userId, messageId);
+            res.status(200).json(result);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }));
+    app.delete('/messages/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { value, error } = message_validator_1.idMessageValidation.validate(req.params.id);
+            const messageId = parseInt(value, 10);
+            yield messageService.deleteMessageById(messageId);
+            res.status(200).json();
         }
         catch (error) {
             res.status(400).json({ message: error.message });

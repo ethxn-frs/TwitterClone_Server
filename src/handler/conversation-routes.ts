@@ -30,6 +30,8 @@ export const conversationRoutes = (app: express.Express) => {
         }
     })
 
+    
+
     app.post('/conversations/:conversationId/add-user', async (req: Request, res: Response) => {
         const {conversationId} = req.params;
         const {userId} = req.body;
@@ -83,6 +85,16 @@ export const conversationRoutes = (app: express.Express) => {
         }
     });
 
+    app.delete('/conversations/:id', async (req: Request, res: Response) => {
+        try{
+            const {value, error} = idConversationValidation.validate(req.params.id);
+            const conversationId = parseInt(value, 10);
+            await conversationService.deleteConversationById(conversationId);
+            res.status(200).json();
+        }catch(error: any){
+            res.status(400).json({ message : error.message});
+        }
+    });
 
    
 };

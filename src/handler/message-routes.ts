@@ -68,4 +68,27 @@ export const messageRoutes = (app: express.Express) => {
             res.status(400).json({message: error.message});
         }
     })
+
+    app.delete('/messages/seenBy/:id', async (req: Request, res: Response)=>{
+        try {
+            const {value, error} = validateMessageSeen.validate(req.body);
+            const messageId = parseInt(req.params.id, 10);
+            const userId = value.userId;
+            const result = await messageService.deleteMessageSeenByIdMessage(userId, messageId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+    app.delete('/messages/:id', async (req: Request, res: Response) => {
+        try{
+            const {value, error} = idMessageValidation.validate(req.params.id);
+            const messageId = parseInt(value, 10);
+            await messageService.deleteMessageById(messageId);
+            res.status(200).json();
+        }catch(error: any){
+            res.status(400).json({ message : error.message});
+        }
+    });
 }
