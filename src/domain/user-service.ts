@@ -47,6 +47,21 @@ export class UserService {
         return result != null;
     }
 
+    async updateUserPatch(userId: number, updates: { [key: string]: string }): Promise<void> {
+        const user = await this.getUserById(userId);
+        if (!user) {
+            throw new Error("Utilisateur non trouvé.");
+        }
+
+        Object.keys(updates).forEach((field) => {
+            if (["firstName", "lastName", "bio", "location", "website", "birthDate"].includes(field)) {
+                (user as any)[field] = updates[field];
+            }
+        });
+
+        await this.db.manager.save(user);
+    }
+
     async getUserById(userId: number): Promise<User> {
         const user = await this.db.manager.findOne(User, {
             where: {id: userId},
@@ -280,4 +295,43 @@ export class UserService {
         return follower.following.some(user => user.id === followeeId);
     }
 
+
+
+    async deleteCoverOrPP(type: string, userId: number): Promise<void> {
+        try {
+            let user = await this.getUserById(userId);
+
+            if (!user) {
+                throw new Error("User not found.");
+            }
+
+            if (type == "cover") {
+                user.coverPictureUrl = undefined
+            } else if (type == "pp") {
+                user.profilePictureUrl = undefined
+            }
+            await this.db.manager.save(user);
+        } catch (error) {
+            console.error("Error fetching liked posts:", error);
+        }
+    }
+
+    async updateCoverOrPP(type: string, uploadResult: string, userId: number): Promise<void> {
+        try {
+            let user = await this.getUserById(userId);
+
+            if (!user) {
+                throw new Error("User not found.");
+            }
+
+            if (type == "cover") {
+                user.coverPictureUrl = "https://pub-8528a192ee0f4215a701df6f312a96a8.r2.dev/" + uploadResult;
+            } else if (type == "pp") {
+                user.profilePictureUrl = "https://pub-8528a192ee0f4215a701df6f312a96a8.r2.dev/" + uploadResult;
+            }
+            await this.db.manager.save(user);
+        } catch (error) {
+            console.error("Error fetching liked posts:", error);
+        }
+    }
 }

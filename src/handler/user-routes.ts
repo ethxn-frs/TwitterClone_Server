@@ -3,12 +3,17 @@ import {
     createUserValidation,
     FollowRequestValidation,
     searchUserValidation,
-    UnfollowRequestValidation
+    UnfollowRequestValidation,
+    UsernameSearchValidation
 } from "./validator/user-validator";
 import {AppDataSource} from "../database/database";
 import {UserService} from "../domain/user-service";
+import {ImageService} from "../domain/image-service";
 
 const userService = new UserService(AppDataSource);
+const imageService = new ImageService(AppDataSource);
+const uploadMiddleware = imageService.getMulterMiddleware();
+
 
 export const userRoutes = (app: express.Express) => {
 
@@ -65,16 +70,12 @@ export const userRoutes = (app: express.Express) => {
             if (!searchUsersValidate) {
                 return;
             }
-            console.log(searchUsersValidate.value)
-            console.log(req.body)
-            console.log("---------------------------------------------------------------------------------------------------------------------------------------------------------------------")
             const result = await userService.searchUsersByContent(searchUsersValidate.value.query);
             res.status(201).json(result);
         } catch (error: any) {
             res.status(400).json({message: error.message});
         }
     });
-
 
     app.get('/users/:id', async (req: Request, res: Response) => {
         try {
@@ -83,6 +84,22 @@ export const userRoutes = (app: express.Express) => {
             res.status(201).json(result);
         } catch (error: any) {
             res.status(400).json({message: error.message});
+        }
+    })
+
+    app.patch('/users/:id', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const updates: { [key: string]: string } = req.body;
+
+            if (!updates || Object.keys(updates).length === 0) {
+                res.status(400).json({message: "Aucune mise à jour fournie."});
+            }
+
+            const updatedUser = await userService.updateUserPatch(userId, updates);
+            res.status(200).json({message: "Utilisateur mis à jour avec succès.", user: updatedUser});
+        } catch (error: any) {
+            res.status(500).json({message: error.message});
         }
     })
 
@@ -116,7 +133,6 @@ export const userRoutes = (app: express.Express) => {
         }
     });
 
-
     app.get('/users/:id/followers', async (req: Request, res: Response) => {
         try {
             const userId: number = parseInt(req.params.id, 10);
@@ -136,6 +152,78 @@ export const userRoutes = (app: express.Express) => {
             res.status(400).json({message: error.message});
         }
     });
+
+    app.put('/users/:userId/delete-pp', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.deleteCoverOrPP("pp", userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+    app.put('/users/:userId/delete-cover', async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            const result = await userService.deleteCoverOrPP("cover", userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+    app.post('/users/username/search', async (req: Request, res: Response) => {
+
+        try {
+
+            const searchValidation = UsernameSearchValidation.validate(req.body);
+            if (!searchValidation) {
+                return;
+            }
+
+            const result = await userService.searchUserByUsername(searchValidation.value.username);
+            res.status(201).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+
+    app.put('/users/:userId/update-pp', uploadMiddleware, async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            // @ts-ignore
+            const uploadResult = await imageService.uploadImage(req.file.path, req.file.originalname);
+
+            if (uploadResult instanceof Error) {
+                res.status(500).send({error: "Error uploading image"});
+                return;
+            }
+            const result = await userService.updateCoverOrPP("pp", uploadResult, userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
+
+
+    app.put('/users/:userId/update-cover', uploadMiddleware, async (req: Request, res: Response) => {
+        try {
+            const userId: number = parseInt(req.params.id, 10);
+            // @ts-ignore
+            const uploadResult = await imageService.uploadImage(req.file.path, req.file.originalname);
+
+            if (uploadResult instanceof Error) {
+                res.status(500).send({error: "Error uploading image"});
+                return;
+            }
+            const result = await userService.updateCoverOrPP("cover", uploadResult, userId);
+            res.status(200).json(result);
+        } catch (error: any) {
+            res.status(400).json({message: error.message});
+        }
+    })
 
     app.get('/users/:id/followers-following/count', async (req: Request, res: Response) => {
         const userId = parseInt(req.params.id);
